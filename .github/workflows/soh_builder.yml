@@ -32,11 +32,6 @@ jobs:
       run: |
         sdkmanager --install "ndk;$NDK_VERSION"
 
-    - name: Update app/build.gradle for NDK path
-      run: |
-        NDK_PATH=$(pwd)/android-ndk/$NDK_VERSION
-        sed -i 's|ndk.dir=.*|ndk.dir=$NDK_PATH|' app/build.gradle
-
     - name: Build APK
       run: ./gradlew assembleRelease
 
