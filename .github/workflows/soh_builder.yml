@@ -13,7 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NDK_VERSION: "27.2.12479018"
+      NDK_VERSION: "27.2.12479018" 
+      ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
 
     steps:
     - name: Checkout code
@@ -23,25 +24,26 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
-        java-version: '17'  # Adjust version as needed
+        java-version: '11'
 
     - name: Set up Android SDK
       uses: android-actions/setup-android@v2
 
     - name: Download NDK
       run: |
-        sdkmanager --install "ndk;$NDK_VERSION"
+        yes | sdkmanager --install "ndk;$NDK_VERSION"
+        sdkmanager --install "cmake;3.18.1"  # Install CMake if needed
 
-    - name: Update app/build.gradle for NDK path
+    - name: Set up local.properties
       run: |
-        NDK_PATH=$(pwd)/android-ndk/$NDK_VERSION
-        sed -i 's|ndk.dir=.*|ndk.dir=$NDK_PATH|' app/build.gradle
+        echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
+        echo "ndk.dir=${ANDROID_SDK_ROOT}/ndk/$NDK_VERSION" >> local.properties
 
     - name: Build APK
-      run: ./gradlew assembleRelease
+      run: ./gradlew assembleRelease --stacktrace
 
     - name: Upload APK
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: app-release.apk
         path: app/build/outputs/apk/release/app-release.apk
