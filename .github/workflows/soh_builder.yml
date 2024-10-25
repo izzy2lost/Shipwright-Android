@@ -34,6 +34,11 @@ jobs:
       run: |
         yes | sdkmanager --install "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.0" --sdk_root=$ANDROID_SDK_ROOT
 
+    - name: Install Ninja
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build
+
     - name: Download CMake 3.25.1
       run: |
         mkdir -p $ANDROID_SDK_ROOT/cmake
