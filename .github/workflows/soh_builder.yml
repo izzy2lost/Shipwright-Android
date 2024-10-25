@@ -32,6 +32,11 @@ jobs:
       run: |
         sdkmanager --install "ndk;$NDK_VERSION"
 
+    - name: Set up local.properties
+      run: |
+        echo "sdk.dir=/home/runner/Android/Sdk" > local.properties
+        echo "ndk.dir=/home/runner/Android/Sdk/ndk/$NDK_VERSION" >> local.properties
+
     - name: Build APK
       run: ./gradlew assembleRelease
 
