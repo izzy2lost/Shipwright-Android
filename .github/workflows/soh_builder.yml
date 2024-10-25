@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NDK_VERSION: "28"
+      NDK_VERSION: "27.2.12479018"
 
     steps:
     - name: Checkout code
