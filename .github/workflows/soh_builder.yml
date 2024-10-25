@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NDK_VERSION: "28.0.12433566"
+      NDK_VERSION: "27.2.12479018"
       ANDROID_SDK_ROOT: /home/runner/Android/Sdk
 
     steps:
@@ -33,19 +33,24 @@ jobs:
       run: |
         sdkmanager --install "ndk;$NDK_VERSION" --sdk_root=$ANDROID_SDK_ROOT
 
-    - name: Verify NDK installation
-      run: ls -l /home/runner/Android/Sdk/ndk
+    - name: Install CMake
+      run: |
+        sdkmanager --install "cmake;3.25.1" --sdk_root=$ANDROID_SDK_ROOT
+
+    - name: Verify CMake installation
+      run: ls -l /home/runner/Android/Sdk/cmake
 
     - name: Set up local.properties
       run: |
         echo "sdk.dir=/home/runner/Android/Sdk" > local.properties
         echo "ndk.dir=/home/runner/Android/Sdk/ndk/$NDK_VERSION" >> local.properties
+        echo "cmake.dir=/home/runner/Android/Sdk/cmake/3.25.1" >> local.properties
 
     - name: Build APK
       run: ./gradlew assembleRelease --stacktrace
 
     - name: Upload APK
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: app-release.apk
         path: app/build/outputs/apk/release/app-release.apk
