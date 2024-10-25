@@ -29,30 +29,19 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v2
 
-    - name: Install Ninja
+    - name: Install Android Studio Components
       run: |
-        sudo apt-get update
-        sudo apt-get install -y ninja-build
+        yes | sdkmanager --install "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.0" "cmake;3.22.1" "ndk;$NDK_VERSION" --sdk_root=$ANDROID_SDK_ROOT
 
-    - name: Download CMake 3.25.1
+    - name: Verify Installation
       run: |
-        mkdir -p $ANDROID_SDK_ROOT/cmake
-        wget https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
-        tar -xzf cmake-3.25.1-linux-x86_64.tar.gz
-        mv cmake-3.25.1-linux-x86_64 $ANDROID_SDK_ROOT/cmake/3.25.1
-
-    - name: Verify CMake installation
-      run: ls -l $ANDROID_SDK_ROOT/cmake
-
-    - name: Download NDK
-      run: |
-        sdkmanager --install "ndk;$NDK_VERSION" --sdk_root=$ANDROID_SDK_ROOT
+        sdkmanager --list --sdk_root=$ANDROID_SDK_ROOT
 
     - name: Set up local.properties
       run: |
         echo "sdk.dir=/home/runner/Android/Sdk" > local.properties
         echo "ndk.dir=/home/runner/Android/Sdk/ndk/$NDK_VERSION" >> local.properties
-        echo "cmake.dir=/home/runner/Android/Sdk/cmake/3.25.1" >> local.properties
+        echo "cmake.dir=/home/runner/Android/Sdk/cmake/3.22.1" >> local.properties
 
     - name: Build APK
       run: |
