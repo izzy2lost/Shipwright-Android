@@ -29,22 +29,22 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v2
 
-    - name: Download NDK
-      run: |
-        sdkmanager --install "ndk;$NDK_VERSION" --sdk_root=$ANDROID_SDK_ROOT
+    - name: List available CMake versions
+      run: sdkmanager --list | grep "cmake;"
 
     - name: Install CMake
       run: |
-        sdkmanager --install "cmake;3.25.1" --sdk_root=$ANDROID_SDK_ROOT
+        sdkmanager --install "cmake;3.22.1" --sdk_root=$ANDROID_SDK_ROOT
 
-    - name: Verify CMake installation
-      run: ls -l /home/runner/Android/Sdk/cmake
+    - name: Download NDK
+      run: |
+        sdkmanager --install "ndk;$NDK_VERSION" --sdk_root=$ANDROID_SDK_ROOT
 
     - name: Set up local.properties
       run: |
         echo "sdk.dir=/home/runner/Android/Sdk" > local.properties
         echo "ndk.dir=/home/runner/Android/Sdk/ndk/$NDK_VERSION" >> local.properties
-        echo "cmake.dir=/home/runner/Android/Sdk/cmake/3.25.1" >> local.properties
+        echo "cmake.dir=/home/runner/Android/Sdk/cmake/3.22.1" >> local.properties
 
     - name: Build APK
       run: ./gradlew assembleRelease --stacktrace
