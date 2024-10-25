@@ -29,6 +29,11 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v2
 
+    - name: Install Ninja
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build
+
     - name: Download CMake 3.25.1
       run: |
         mkdir -p $ANDROID_SDK_ROOT/cmake
@@ -50,7 +55,8 @@ jobs:
         echo "cmake.dir=/home/runner/Android/Sdk/cmake/3.25.1" >> local.properties
 
     - name: Build APK
-      run: ./gradlew assembleRelease --stacktrace
+      run: |
+        ./gradlew assembleRelease --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true -Pcmake.buildType=Release -Pcmake.cmakeCommand=ninja
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
