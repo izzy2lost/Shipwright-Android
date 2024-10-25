@@ -8,7 +8,7 @@ else {
 }
 
 android {
-    ndkPath "/home/runner/Android/Sdk/ndk/27.2.12479018"  // Point to your own NDK
+    ndkPath "home/runner/Android/Sdk/ndk/27.2.12479018"  // Point to your own NDK
     compileSdkVersion 31
     defaultConfig {
         if (buildAsApplication) {
