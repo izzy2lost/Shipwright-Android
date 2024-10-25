@@ -1,0 +1,47 @@
+name: Android APK Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      NDK_VERSION: "26.0.0" # Adjust the version as needed
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'  # Adjust version as needed
+
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v2
+
+    - name: Download NDK
+      run: |
+        sdkmanager --install "ndk;$NDK_VERSION"
+
+    - name: Update app/build.gradle for NDK path
+      run: |
+        NDK_PATH=$(pwd)/android-ndk/$NDK_VERSION
+        sed -i 's|ndk.dir=.*|ndk.dir=$NDK_PATH|' app/build.gradle
+
+    - name: Build APK
+      run: ./gradlew assembleRelease
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release.apk
+        path: app/build/outputs/apk/release/app-release.apk
