@@ -1,4 +1,3 @@
-
 package com.dishii.soh;
 import org.libsdl.app.SDLActivity;
 
@@ -30,12 +29,29 @@ import android.util.Log;
 //This class is the main SDLActivity and just sets up a bunch of default files
 public class MainActivity extends SDLActivity{
 
+    private void adjustGameViewForPortrait() {
+        // Check if the device is in portrait mode
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            // Get the root view of the game
+            FrameLayout gameLayout = (FrameLayout) getContentView();
+
+            // Adjust the height to 50% of the screen
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                getResources().getDisplayMetrics().heightPixels / 2
+            );
+            gameLayout.setLayoutParams(params);
+        }
+    }
+        
+
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 1;
 
     SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        adjustGameViewForPortrait();
         super.onCreate(savedInstanceState);
 
         preferences = getSharedPreferences("com.dishii.soh.prefs",Context.MODE_PRIVATE);
