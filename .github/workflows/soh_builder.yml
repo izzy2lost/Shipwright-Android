@@ -30,21 +30,27 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v2
 
-    - name: Install Android Studio Components
+    - name: Install Android SDK Components
       run: |
-        yes | sdkmanager --install "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.0" --sdk_root=$ANDROID_SDK_ROOT
+        yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK_ROOT
+        sdkmanager --install \
+          "cmdline-tools;latest" \
+          "platform-tools" \
+          "platforms;android-33" \
+          "build-tools;33.0.0" \
+          --sdk_root=$ANDROID_SDK_ROOT
 
     - name: Install Ninja
       run: |
         sudo apt-get update
         sudo apt-get install -y ninja-build
 
-    - name: Download CMake 3.25.1
+    - name: Download and Install CMake
       run: |
         mkdir -p $ANDROID_SDK_ROOT/cmake
-        wget https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
-        tar -xzf cmake-3.25.1-linux-x86_64.tar.gz
-        mv cmake-3.25.1-linux-x86_64 $ANDROID_SDK_ROOT/cmake/$CMAKE_VERSION
+        wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-linux-x86_64.tar.gz
+        tar -xzf cmake-$CMAKE_VERSION-linux-x86_64.tar.gz
+        mv cmake-$CMAKE_VERSION-linux-x86_64 $ANDROID_SDK_ROOT/cmake/$CMAKE_VERSION
 
     - name: Install NDK
       run: |
@@ -62,6 +68,7 @@ jobs:
     - name: Build APK
       run: |
         ./gradlew assembleRelease --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
+      working-directory: app # Adjust this path if your Gradle build file isn't in the root directory.
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
