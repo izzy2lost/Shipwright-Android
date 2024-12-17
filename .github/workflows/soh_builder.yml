@@ -14,7 +14,6 @@ jobs:
 
     env:
       NDK_VERSION: "26.3.11579264"
-      CMAKE_VERSION: "3.18.1" # Use a compatible CMake version
       ANDROID_SDK_ROOT: /home/runner/Android/Sdk
 
     steps:
@@ -30,16 +29,23 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v2
 
-    - name: Install Android SDK Components
+    - name: Update Android SDK Tools
       run: |
-        sdkmanager --licenses --sdk_root=$ANDROID_SDK_ROOT
-        sdkmanager --install "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.0" "cmake;$CMAKE_VERSION" "ndk;$NDK_VERSION"
+        sdkmanager --licenses
+        sdkmanager --install "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.0"
+
+    - name: Download and Install CMake
+      run: |
+        wget https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
+        tar -xzf cmake-3.25.1-linux-x86_64.tar.gz
+        sudo mv cmake-3.25.1-linux-x86_64 /usr/local/cmake-3.25.1
+        sudo ln -s /usr/local/cmake-3.25.1/bin/cmake /usr/bin/cmake
+
+    - name: Install NDK
+      run: sdkmanager --install "ndk;$NDK_VERSION"
 
     - name: Configure local.properties
-      run: |
-        echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-        echo "ndk.dir=$ANDROID_SDK_ROOT/ndk/$NDK_VERSION" >> local.properties
-        echo "cmake.dir=$ANDROID_SDK_ROOT/cmake/$CMAKE_VERSION" >> local.properties
+      run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
 
     - name: Build APK
       run: ./gradlew assembleRelease --stacktrace
