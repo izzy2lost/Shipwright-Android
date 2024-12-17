@@ -18,8 +18,10 @@ jobs:
       ANDROID_SDK_ROOT: /home/runner/Android/Sdk
 
     steps:
-    - name: Checkout code
+    - name: Checkout with submodules
       uses: actions/checkout@v3
+      with:
+        submodules: recursive
 
     - name: Set up JDK
       uses: actions/setup-java@v3
@@ -30,48 +32,21 @@ jobs:
     - name: Set up Android SDK
       uses: android-actions/setup-android@v2
 
-    - name: Install Android SDK Components
+    - name: Install Stable Android Tools
       run: |
         yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK_ROOT
-        sdkmanager --install \
-          "cmdline-tools;latest" \
-          "platform-tools" \
-          "platforms;android-33" \
-          "build-tools;33.0.0" \
-          --sdk_root=$ANDROID_SDK_ROOT
+        sdkmanager --install "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.0" --sdk_root=$ANDROID_SDK_ROOT
 
-    - name: Install Ninja
+    - name: Install Boost
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build
+        sudo apt-get install -y libboost-all-dev
 
-    - name: Download and Install CMake
-      run: |
-        mkdir -p $ANDROID_SDK_ROOT/cmake
-        wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-linux-x86_64.tar.gz
-        tar -xzf cmake-$CMAKE_VERSION-linux-x86_64.tar.gz
-        mv cmake-$CMAKE_VERSION-linux-x86_64 $ANDROID_SDK_ROOT/cmake/$CMAKE_VERSION
-
-    - name: Install NDK
-      run: |
-        sdkmanager --install "ndk;$NDK_VERSION" --sdk_root=$ANDROID_SDK_ROOT
-
-    - name: Verify Installations
-      run: sdkmanager --list --sdk_root=$ANDROID_SDK_ROOT
-
-    - name: Set up local.properties
+    - name: Configure local.properties
       run: |
         echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-        echo "ndk.dir=$ANDROID_SDK_ROOT/ndk/$NDK_VERSION" >> local.properties
         echo "cmake.dir=$ANDROID_SDK_ROOT/cmake/$CMAKE_VERSION" >> local.properties
 
     - name: Build APK
       run: |
         ./gradlew assembleRelease --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
-      working-directory: app # Adjust this path if your Gradle build file isn't in the root directory.
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-release.apk
-        path: app/build/outputs/apk/release/app-release.apk
