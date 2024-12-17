@@ -14,14 +14,12 @@ jobs:
 
     env:
       NDK_VERSION: "26.3.11579264"
-      CMAKE_VERSION: "3.25.1"
+      CMAKE_VERSION: "3.18.1" # Use a compatible CMake version
       ANDROID_SDK_ROOT: /home/runner/Android/Sdk
 
     steps:
-    - name: Checkout with submodules
+    - name: Checkout code
       uses: actions/checkout@v3
-      with:
-        submodules: recursive
 
     - name: Set up JDK
       uses: actions/setup-java@v3
@@ -34,8 +32,8 @@ jobs:
 
     - name: Install Android SDK Components
       run: |
-        yes | sdkmanager --licenses --sdk_root=$ANDROID_SDK_ROOT
-        sdkmanager --install "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.0" "cmake;3.25.1" "ndk;$NDK_VERSION"
+        sdkmanager --licenses --sdk_root=$ANDROID_SDK_ROOT
+        sdkmanager --install "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.0" "cmake;$CMAKE_VERSION" "ndk;$NDK_VERSION"
 
     - name: Configure local.properties
       run: |
