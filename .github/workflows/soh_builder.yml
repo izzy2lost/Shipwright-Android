@@ -34,6 +34,11 @@ jobs:
     - name: Install CMake 3.25.1
       run: |
         sudo apt-get update
+        sudo apt-get install -y apt-transport-https ca-certificates gnupg
+        sudo mkdir -p /etc/apt/keyrings
+        curl -fsSL https://apt.kitware.com/keys/kitware-archive-latest.asc | sudo gpg --dearmor -o /etc/apt/keyrings/kitware-archive-keyring.gpg
+        echo 'deb [signed-by=/etc/apt/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main' | sudo tee /etc/apt/sources.list.d/kitware.list > /dev/null
+        sudo apt-get update
         sudo apt-get install -y cmake=3.25.1-0kitware1
 
     - name: Build with Gradle
