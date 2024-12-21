@@ -23,8 +23,9 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
       with:
-        api-level: 31
-        ndk: '21.4.7075529'  # Specify a valid NDK version
+        components: 'platform-tools,build-tools-31.0.0,ndk;21.4.7075529'
+        build-tools: '31.0.0'
+        ndk-version: '21.4.7075529'
 
     - name: Build with Gradle
       run: ./gradlew build
