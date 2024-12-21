@@ -20,12 +20,16 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v2
-      with:
-        components: 'platform-tools,build-tools-31.0.0,ndk;21.4.7075529'
-        build-tools: '31.0.0'
-        ndk-version: '21.4.7075529'
+    - name: Install Android SDK
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget unzip
+        wget https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip -O cmdline-tools.zip
+        unzip cmdline-tools.zip -d $HOME
+        mkdir -p $ANDROID_HOME/cmdline-tools
+        mv $HOME/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "ndk;21.4.7075529"
 
     - name: Build with Gradle
       run: ./gradlew build
