@@ -1,51 +1,29 @@
-name: Android APK Build
+name: Android CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      NDK_VERSION: "26.3.11579264"
-      ANDROID_SDK_ROOT: /home/runner/Android/Sdk
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-    - name: Set up JDK
-      uses: actions/setup-java@v3
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v2
       with:
-        distribution: 'temurin'
-        java-version: '17'
+        java-version: '8'
 
-    - name: Set up Android SDK
+    - name: Setup Android SDK
       uses: android-actions/setup-android@v2
+      with:
+        api-level: 31
+        ndk: true
 
-    - name: Update Android SDK Tools
-      run: |
-        sdkmanager --licenses
-        sdkmanager --install "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.0"
-
-    - name: Download and Install CMake
-      run: |
-        wget https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz
-        tar -xzf cmake-3.25.1-linux-x86_64.tar.gz
-        sudo mv cmake-3.25.1-linux-x86_64 /usr/local/cmake-3.25.1
-        sudo ln -s /usr/local/cmake-3.25.1/bin/cmake /usr/bin/cmake
-
-    - name: Install NDK
-      run: sdkmanager --install "ndk;$NDK_VERSION"
-
-    - name: Configure local.properties
-      run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-
-    - name: Build APK
-      run: ./gradlew assembleRelease --stacktrace
+    - name: Build with Gradle
+      run: ./gradlew build
