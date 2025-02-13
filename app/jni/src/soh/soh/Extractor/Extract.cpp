@@ -95,7 +95,7 @@ enum class ButtonId : int {
 };
 
 #ifdef __ANDROID__
-const char* javaRomPath = NULL;
+static char javaRomPath[4096] = { 0 };
 bool fileDialogOpen = false;
 
 //function to be called from C
@@ -108,11 +108,28 @@ void openFilePickerFromC(JNIEnv* env, jobject javaObject) {
 // Define the native method to handle the selected file path
 extern "C" void JNICALL Java_com_dishii_soh_MainActivity_nativeHandleSelectedFile(JNIEnv* env, jobject obj, jstring filePath) {
     const char* filePathStr = env->GetStringUTFChars(filePath, 0);
-    javaRomPath = strdup(filePathStr); // save filepath to string
+    snprintf(javaRomPath, sizeof(javaRomPath), "%s", filePathStr);
     fileDialogOpen = false;
     env->ReleaseStringUTFChars(filePath, filePathStr);
 }
 
+/*
+ * (MESSY) begin duplicated code from LUS::Context::GetAppDirectoryPath() __ANDROID__ implementation
+ */
+std::string getExternalAssetsPathFromCPP(JNIEnv* javaEnv, jobject javaObject) {
+    jclass javaClass = javaEnv->GetObjectClass(javaObject);
+    jmethodID getExternalAssetsPathMethod = javaEnv->GetMethodID(javaClass, "getExternalAssetsPath", "()Ljava/lang/String;");
+    jstring externalAssetsPath_jstr = static_cast<jstring>(javaEnv->CallObjectMethod(javaObject, getExternalAssetsPathMethod));
+
+    const char *externalAssetsPath_cstr = javaEnv->GetStringUTFChars(externalAssetsPath_jstr, nullptr);
+    std::string externalAssetsPath(externalAssetsPath_cstr);
+
+    javaEnv->ReleaseStringUTFChars(externalAssetsPath_jstr, externalAssetsPath_cstr);
+    return externalAssetsPath;
+}
+/*
+ * (MESSY) end duplicated code
+ */
 #endif
 
 void Extractor::ShowErrorBox(const char* title, const char* text) {
@@ -248,7 +265,7 @@ void Extractor::GetRoms(std::vector<std::string>& roms) {
     // if (h != nullptr) {
     //    CloseHandle(h);
     //}
-#elif unix && !defined(__ANDROID__)
+#elif unix
     // Open the directory of the app.
     DIR* d = opendir(mSearchPath.c_str());
     struct dirent* dir;
@@ -272,33 +289,6 @@ void Extractor::GetRoms(std::vector<std::string>& roms) {
         }
     }
     closedir(d);
-#elif defined(__ANDROID__)
-    const char* androidAssetPath = SDL_AndroidGetExternalStoragePath();
-    if (androidAssetPath == NULL) {
-        printf("Error accessing Android assets directory: %s\n", SDL_GetError());
-        return;
-    }
-
-    // Use androidAssetPath for file operations
-    // Example: List files in the directory
-    DIR* dir;
-    struct dirent* entry;
-
-    if ((dir = opendir(androidAssetPath)) != NULL) {
-        while ((entry = readdir(dir)) != NULL) {
-            if (entry->d_type == DT_REG) {
-                char* filename = entry->d_name;
-                // Check file extension and process accordingly
-                if (strstr(filename, ".n64") || strstr(filename, ".z64") || strstr(filename, ".v64")) {
-                    std::string fullPath = std::string(androidAssetPath) + "/" + filename;
-                    roms.push_back(fullPath);
-                }
-            }
-        }
-        closedir(dir);
-    } else {
-        printf("Error opening directory: %s\n", androidAssetPath);
-    }
 #else
     for (const auto& file : std::filesystem::directory_iterator(mSearchPath)) {
         if (file.is_directory())
@@ -358,29 +348,18 @@ bool Extractor::GetRomPathFromBox() {
         //Do nothing until a file is chosen
         SDL_Delay(250);
     }
-    SDL_Log("%s",javaRomPath);
+    SDL_Log("javaRomPath: %s", javaRomPath);
+
     selection.push_back(javaRomPath);
-
-    if (selection.empty()) {
-        return false;
-    }
-
-    mCurrentRomPath = selection[0];
-
-    if (javaRomPath) {
-        free((void*)javaRomPath);
-        javaRomPath = NULL;
-    }
-
 #else
     auto selection = pfd::open_file("Select a file", mSearchPath, { "N64 Roms", "*.z64 *.n64 *.v64" }).result();
+#endif
 
     if (selection.empty()) {
         return false;
     }
 
     mCurrentRomPath = selection[0];
-#endif
     mCurRomSize = GetCurRomSize();
     return true;
 }
@@ -614,10 +593,13 @@ const char* Extractor::GetZapdVerStr() const {
 }
 
 std::string Extractor::Mkdtemp() {
-#ifndef __ANDROID__
-    std::string temp_dir = std::filesystem::temp_directory_path().string();
+#ifdef __ANDROID__
+    JNIEnv* javaEnv = (JNIEnv*)SDL_AndroidGetJNIEnv();
+    jobject javaObject = (jobject)SDL_AndroidGetActivity();
+    std::string temp_dir = getExternalAssetsPathFromCPP(javaEnv, javaObject) + "/tmp";
+    std::filesystem::create_directories(temp_dir);
 #else
-    std::string temp_dir = SDL_AndroidGetExternalStoragePath();
+    std::string temp_dir = std::filesystem::temp_directory_path().string();
 #endif
     
     // create 6 random alphanumeric characters
