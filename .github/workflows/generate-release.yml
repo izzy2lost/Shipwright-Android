@@ -18,7 +18,7 @@ jobs:
 
       - name: Build SoH
         run: |
-          ./gradlew assembleRelease
+          ./gradlew assembleDebug
           mv app/build/outputs/apk/release/app-release.apk soh.apk
 
       - name: Upload Artifact
