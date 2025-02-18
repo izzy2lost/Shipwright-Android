@@ -1,22 +1,26 @@
-name: generate-release
+name: Build Release Apk
+
 on:
   workflow_dispatch:
 jobs:
   build-android:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04    
     steps:
+    - name: Checkout Repo
     - uses: actions/checkout@v4
       with:
         submodules: true
+        
     - name: Install dependencies
       run: sudo apt-get install -y ninja-build
+      
     - name: Build SoH
       run: |
-        ./gradlew assembleDebug
-        mv app/build/outputs/apk/debug/app-debug.apk soh.apk
-    - name: Create release
-      uses: svenstaro/upload-release-action@v2
+        ./gradlew assembleRelease
+        mv app/build/outputs/apk/release/app-release.apk soh.apk
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.ref }}
-        file: soh.apk
+        name: soh-apk
+        path: soh.apk
