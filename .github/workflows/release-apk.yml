@@ -1,0 +1,28 @@
+---
+name: Upload Release Apk
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install dependencies
+        run: sudo apt-get install -y ninja-build
+
+      - name: Build SoH APK (Release)
+        run: |
+          ./gradlew assembleRelease
+          mv app/build/outputs/apk/release/app-release.apk soh-release.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: soh-release-apk
+          path: soh-release.apk
