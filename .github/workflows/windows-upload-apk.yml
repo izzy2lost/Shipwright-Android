@@ -1,0 +1,28 @@
+---
+name: Upload Apk
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install dependencies
+        run: choco install ninja -y
+
+      - name: Build SoH APK
+        run: |
+          .\gradlew.bat assembleDebug -P elfBuildType=RelWithDebInfo
+          move app\build\outputs\apk\debug\app-debug.apk soh.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: soh-apk
+          path: soh.apk
