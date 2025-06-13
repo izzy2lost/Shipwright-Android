@@ -17,9 +17,12 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install -y ninja-build
 
+      - name: Give gradlew permissions
+        run: chmod +x Android/gradlew
+
       - name: Build SoH APK (Release)
         run: |
-          ./gradlew assembleRelease -P elfBuildType=RelWithDebInfo
+          ./gradlew assembleRelease -P elfBuildType=Release
           mv app/build/outputs/apk/release/app-release.apk soh-release.apk
 
       - name: Upload APK artifact
