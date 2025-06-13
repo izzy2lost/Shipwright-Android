@@ -1,5 +1,5 @@
 ---
-name: Upload Apk
+name: Windows Upload Apk
 
 on:
   workflow_dispatch:
