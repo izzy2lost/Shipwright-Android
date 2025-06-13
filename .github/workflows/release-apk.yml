@@ -35,7 +35,7 @@ jobs:
 
       - name: Build SoH APK (Release)
         run: |
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease -P elfBuildType=RelWithDebInfo
           mv app/build/outputs/apk/release/app-release.apk soh-release.apk
 
       - name: Upload APK artifact
