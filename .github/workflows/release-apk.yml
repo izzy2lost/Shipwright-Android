@@ -8,6 +8,23 @@ jobs:
   build-android:
     runs-on: ubuntu-24.04
     steps:
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+         # this might remove tools that are actually needed,
+         # if set to "true" but frees about 6 GB
+         tool-cache: false
+        
+         # all of these default to true, but feel free to set to
+         # "false" if necessary for your workflow
+         android: false
+         dotnet: true
+         haskell: true
+         large-packages: true
+         docker-images: true
+         swap-storage: true
+        
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v4
         with:
