@@ -1,5 +1,5 @@
 ---
-name: generate-release
+name: Upload Apk
 
 on:
   workflow_dispatch:
